@@ -7,5 +7,6 @@ RUN sudo apt-get update \
   && tar -xf node-v20.3.0-linux-arm64.tar.xz \
   && sudo mv node-v20.3.0-linux-arm64 /usr/local/ \
   && sudo ln -s /usr/local/node-v20.3.0-linux-arm64/bin/node /usr/local/bin/node \
-  && sudo ln -s /usr/local/node-v20.3.0-linux-arm64/bin/npm /usr/local/bin/npm
+  && sudo ln -s /usr/local/node-v20.3.0-linux-arm64/bin/npm /usr/local/bin/npm \
+  && rm -f node-v20.3.0-linux-arm64.tar.xz
 EXPOSE 8080
