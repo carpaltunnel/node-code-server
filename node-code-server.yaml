@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-code-server
+  labels:
+    app: node-code-server
+  annotations:
+    kubesailEditorUid: FIXME
+    kubesail.com/template: FIXME
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-code-server
+  template:
+    metadata:
+      labels:
+        app: node-code-server
+    spec:
+      initContainers:
+        - name: take-config-dir-ownership
+          image: kubesail/k8s-tools:v6
+          command:
+            - /bin/bash
+            - -c
+            - mkdir -p /home/coder/.config /home/coder/project
+              /home/coder/.local && chown 1000:1000 -R /home/coder
+          volumeMounts:
+            - name: node-code-server-data
+              mountPath: /home/coder
+      containers:
+        - name: node-code-server
+          image: carpaltunnel/node-code-server:initial
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DOCKER_USER
+              value: "1000"
+            - name: PASSWORD
+              value: "{{ PASSWORD|RANDOM(12)|Your code-server authentication password }}"
+          volumeMounts:
+            - name: node-code-server-data
+              mountPath: /home/coder
+      volumes:
+        - name: node-code-server-data
+          persistentVolumeClaim:
+            claimName: code-server-data
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-code-server
+  labels:
+    app: node-code-server
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    nginx.org/websocket-services: node-code-server
+    kubernetes.io/tls-acme: "true"
+    kubesailEditorUid: FIXME
+    kubesail.com/template: FIXME
+spec:
+  tls:
+    - hosts:
+        - node-code-server.{{ CLUSTER_ADDRESS }}
+        - node-code-server.{{ LOCAL_CLUSTER_ADDRESS }}
+  rules:
+    - host: node-code-server.{{ CLUSTER_ADDRESS }}
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: node-code-server
+                port:
+                  name: http
+    - host: node-code-server.{{ LOCAL_CLUSTER_ADDRESS }}
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: node-code-server
+                port:
+                  name: http
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-code-server-data
+  labels:
+    app: node-code-server
+  annotations:
+    kubesailEditorUid: FIXME
+    kubesail.com/template: FIXME
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+status:
+  phase: Bound
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-code-server
+  labels:
+    app: node-code-server
+  annotations:
+    kubesailEditorUid: FIXME
+    kubesail.com/template: FIXME
+spec:
+  selector:
+    app: node-code-server
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: http
