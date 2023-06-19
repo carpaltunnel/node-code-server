@@ -5,8 +5,8 @@ metadata:
   labels:
     app: node-code-server
   annotations:
-    kubesailEditorUid: FIXME
-    kubesail.com/template: FIXME
+    kubesailEditorUid: c6be85c4-99aa-4e0e-8f17-37380ac1ce5c
+    kubesail.com/template: carpaltunnel/node-code-server:v8
 spec:
   strategy:
     type: Recreate
@@ -48,7 +48,7 @@ spec:
       volumes:
         - name: node-code-server-data
           persistentVolumeClaim:
-            claimName: code-server-data
+            claimName: node-code-server-data
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -57,12 +57,12 @@ metadata:
   labels:
     app: node-code-server
   annotations:
+    kubesailEditorUid: 9fd8ddde-a5a2-4188-b446-27b0f3bfe6dc
+    kubesail.com/template: carpaltunnel/node-code-server:v8
     cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/proxy-body-size: 500m
     nginx.org/websocket-services: node-code-server
     kubernetes.io/tls-acme: "true"
-    kubesailEditorUid: FIXME
-    kubesail.com/template: FIXME
 spec:
   tls:
     - hosts:
@@ -95,20 +95,20 @@ metadata:
   labels:
     app: node-code-server
   annotations:
-    kubesailEditorUid: FIXME
-    kubesail.com/template: FIXME
+    kubesailEditorUid: 0d85732a-1b3e-44d7-af8b-ea2ff1a762dc
+    kubesail.com/template: carpaltunnel/node-code-server:v8
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
 status:
   phase: Bound
   accessModes:
     - ReadWriteOnce
   capacity:
-    storage: 100Mi
+    storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
@@ -117,8 +117,8 @@ metadata:
   labels:
     app: node-code-server
   annotations:
-    kubesailEditorUid: FIXME
-    kubesail.com/template: FIXME
+    kubesailEditorUid: 8f5fa438-24d7-435a-89ee-df5b741d377b
+    kubesail.com/template: carpaltunnel/node-code-server:v8
 spec:
   selector:
     app: node-code-server
